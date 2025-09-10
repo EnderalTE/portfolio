@@ -1,0 +1,439 @@
+<!doctype html>
+<html class="h-full" lang="en" data-theme="blue-cyan">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Israel T. T. · Cybersecurity</title>
+  <meta name="description" content="Cybersecurity & Digital Forensics Student." />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          boxShadow: { panel: '0 20px 60px rgba(0,0,0,0.40)' }
+        }
+      }
+    }
+  </script>
+
+  <!-- Theme system (CSS variables) -->
+  <script>
+    const THEMES = {
+      'blue-cyan': { '--bg':'#0b1020','--surface':'#0f172a','--muted':'#9aa4b2','--fg':'#e5e7eb','--border':'#1f2937','--brand':'#00e5ff','--accent':'#00ffa8' },
+      'slate-emerald': { '--bg':'#0b1320','--surface':'#0c1b2a','--muted':'#9fb0c3','--fg':'#eef2f7','--border':'#16334a','--brand':'#34d399','--accent':'#22d3ee' }
+    };
+    function applyTheme(name){
+      const vars = THEMES[name] || THEMES['blue-cyan'];
+      for (const k in vars) document.documentElement.style.setProperty(k, vars[k]);
+      document.documentElement.setAttribute('data-theme', name);
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      applyTheme(document.documentElement.getAttribute('data-theme') || 'blue-cyan');
+      const year = document.getElementById('year'); if (year) year.textContent = new Date().getFullYear();
+      const sel = document.getElementById('themeSelect'); sel && sel.addEventListener('change', e => applyTheme(e.target.value));
+      const mobileBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      if (mobileBtn && mobileMenu) mobileBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+    });
+  </script>
+
+  <!-- Small helper styles -->
+
+  <style>
+    :root {
+      --bg:#0b1020; --surface:#0f172a; --muted:#9aa4b2; --fg:#e5e7eb;
+      --border:#1f2937; --brand:#00e5ff; --accent:#00ffa8;
+    }
+    body { background: var(--bg); color: var(--fg); }
+    .btn { display:inline-flex; align-items:center; gap:.5rem; border:1px solid var(--border); background: var(--surface); border-radius:.75rem; padding:.5rem 1rem; font-size:.875rem; }
+    .btn:hover { border-color: var(--brand); }
+    .navlink{ color: color-mix(in srgb, var(--muted) 85%, var(--fg) 15%); transition: filter .2s, color .2s; }
+    .navlink:hover{ color: var(--fg); filter: drop-shadow(0 0 10px var(--brand)) drop-shadow(0 0 6px var(--accent)); }
+    .chip { background: #111827; border: 1px solid var(--border); border-radius: .75rem; padding: .75rem; }
+    .card-gradient { background-image: linear-gradient(rgba(0, 255, 136, 0.05), rgba(0, 180, 255, 0.05)); }
+    .card-shadow { box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+
+    /* Hover lift effect */
+    .card-gradient, .card-shadow {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-gradient:hover, .card-shadow:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 25px 70px rgba(0,0,0,0.45);
+    }
+
+    /* Slightly decreased side margins for large screens */
+    @media (min-width: 1280px) {
+        .max-w-\[1100px\] { max-width: 1200px; }
+    }
+    @media (min-width: 1536px) {
+        .max-w-\[1100px\] { max-width: 1280px; }
+    }
+
+    /* Wider text scaling for hero and cards on large screens */
+    @media (min-width: 1024px) {
+      h1 { font-size: 2.1rem; }
+      h2 { font-size: 2rem; }
+      .card-gradient p, .card-shadow p { font-size: 0.95rem; line-height: 1.55rem; }
+    }
+    @media (min-width: 1536px) {
+      h1 { font-size: 2.4rem; max-width: 65ch; }
+      h2 { font-size: 2.2rem; }
+      .card-gradient p, .card-shadow p { font-size: 1rem; line-height: 1.6rem; max-width: 70ch; }
+    }
+  </style>
+
+  <!-- Three.js (ESM) -->
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js";
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const canvas = document.getElementById('globeCanvas');
+      if (!canvas) return;
+
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+      const scene = new THREE.Scene();
+      const world = new THREE.Group();
+      scene.add(world);
+
+      const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+      camera.position.z = 3;
+
+      // Stars that rotate with the globe
+      const starGeometry = new THREE.BufferGeometry();
+      const starCount = 2000;
+      const starPositions = new Float32Array(starCount * 3);
+      for (let i = 0; i < starCount; i++) {
+        const i3 = i * 3;
+        const r = 6 + Math.random() * 4;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        starPositions[i3]     = r * Math.sin(phi) * Math.cos(theta);
+        starPositions[i3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+        starPositions[i3 + 2] = r * Math.cos(phi);
+      }
+      starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+      const starMaterial = new THREE.PointsMaterial({ color: '#ffffff', size: 0.02 });
+      const stars = new THREE.Points(starGeometry, starMaterial);
+      world.add(stars);
+
+      // Wireframe globe (pure wireframe)
+      const globeGeometry = new THREE.SphereGeometry(0.8, 32, 32);
+      const globeMaterial = new THREE.MeshBasicMaterial({ color: '#00e5ff', wireframe: true });
+      const globe = new THREE.Mesh(globeGeometry, globeMaterial);
+      world.add(globe);
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        const width = Math.max(1, Math.floor(rect.width));
+        const height = Math.max(1, Math.floor(rect.height));
+        renderer.setSize(width, height, false);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        resize();
+        world.rotation.y += 0.002; // auto-spin
+        renderer.render(scene, camera);
+      }
+
+      resize();
+      animate();
+      window.addEventListener('resize', resize);
+    });
+  </script>
+</head>
+
+<body class="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
+  <!-- Glassy Navbar with centered links + theme switcher -->
+  <header class="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-[var(--surface)]/60 backdrop-blur">
+    <div class="max-w-[1100px] mx-auto px-5 grid grid-cols-3 items-center h-16">
+      <!-- Left: Logo -->
+      <a href="#home" class="flex items-center gap-2 font-semibold w-fit">
+        <span class="grid h-8 w-8 place-items-center rounded-lg text-slate-900 font-extrabold text-sm"
+              style="background-image: linear-gradient(135deg, var(--accent), var(--brand))">CY</span>
+        <span class="text-base hidden sm:inline">TheYenDev</span>
+      </a>
+
+      <!-- Center: Nav links -->
+      <nav class="hidden md:flex justify-center gap-6 text-sm">
+        <a class="navlink" href="#about">About</a>
+        <a class="navlink" href="#coursework">Coursework</a>
+        <a class="navlink" href="#projects">Projects</a>
+        <a class="navlink" href="#skills">Skills</a>
+        <a class="navlink" href="#contact">Contact</a>
+      </nav>
+
+      <!-- Right: Theme + mobile -->
+      <div class="flex items-center justify-end gap-3">
+        <select id="themeSelect" class="hidden sm:block bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm">
+          <option value="blue-cyan">Blue + Cyan</option>
+          <option value="slate-emerald">Slate + Emerald</option>
+        </select>
+        <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg border border-white/10 bg-black/20 text-[var(--muted)]">☰</button>
+      </div>
+    </div>
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="hidden md:hidden border-t border-white/10 bg-[var(--surface)]/80">
+      <div class="max-w-[1100px] mx-auto px-5 py-3 flex flex-col gap-3 text-sm">
+        <a class="navlink" href="#about">About</a>
+        <a class="navlink" href="#coursework">Coursework</a>
+        <a class="navlink" href="#projects">Projects</a>
+        <a class="navlink" href="#skills">Skills</a>
+        <a class="navlink" href="#contact">Contact</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section id="home" class="pt-24 md:pt-28">
+    <div class="max-w-[1100px] mx-auto px-5 grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <p class="uppercase tracking-[0.22em] text-[10px] md:text-xs font-bold text-[var(--brand)]">
+          Cybersecurity · Digital Forensics · Student
+        </p>
+        <h1 class="mt-3 text-xl md:text-3xl font-semibold leading-snug">
+          Hi, I'm <span class="text-[var(--accent)]">Israel</span> - a college student learning to defend systems and investigate incidents.
+        </h1>
+        <p class="mt-3 text-[var(--muted)]">
+          I am building skills through college coursework, my homelab, and CTF challenges. Here you’ll find my hands-on projects, write-ups, and what I’m studying next. This site collects my journey.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="#projects" class="btn">🔎 View Projects</a>
+          <a href="#coursework" class="btn">📚 Coursework</a>
+          <a href="#contact" class="btn">✉️ Contact</a>
+        </div>
+      </div>
+
+      <!-- Globe container -->
+      <div class="relative flex items-center justify-center w-full max-w-xs sm:max-w-sm md:max-w-md aspect-square mx-auto min-h-[240px] sm:min-h-[300px]">
+        <div class="absolute inset-0 rounded-full bg-gradient-to-br from-[var(--brand)]/20 to-[var(--accent)]/20 blur-2xl"></div>
+        <div class="relative rounded-full border-2 border-[var(--brand)] shadow-[0_0_30px_var(--brand)] overflow-hidden w-full h-full flex items-center justify-center">
+          <canvas id="globeCanvas" class="w-full h-full"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about" class="py-12 md:pt-28">
+    <div class="max-w-[1100px] mx-auto px-5">
+      <h2 class="text-[1.6rem] md:text-[1.9rem] font-semibold mb-2">About Me</h2>
+      <p class="text-slate-400 mb-6">Curiosity-driven defender with a toolkit to shake things up.</p>
+
+      <div class="rounded-2xl border border-slate-700/70 bg-[#0B1220]/90 shadow-[0_20px_60px_rgba(0,0,0,0.4)] p-6 md:p-7 card-gradient">
+        <div class="grid md:grid-cols-[280px_1fr] gap-6 items-start">
+          <img class="rounded-xl border border-slate-700 h-[280px] grid place-items-center text-slate-400 font-semibold" src="https://filedn.com/lSsWOPuNbCjhxq3GC3sDbwf/port-pfp.png">
+          <div>
+            <p>Hi, I’m <strong>Israel</strong>, a cybersecurity major with interests in problem solving, network security, operating systems, and scripting. I learn best by doing-building labs, breaking things “safely”, and writing up my findings. My curiosity spans multiple disciplines, from technology and cybersecurity to creative storytelling.</p>
+            <p class="mt-2"> Over the years, I’ve had the privilege of working on various projects that have strengthened my skills</p>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-2 gap-3 mt-4">
+              <div class="chip bg-[#0B1220]/90">🎓 <strong>School:</strong> LeMoyne College, Class of 2029</div>
+              <div class="chip bg-[#0B1220]/90">📍 <strong>Location:</strong> New York, USA</div>
+              <div class="chip bg-[#0B1220]/90">🛠 <strong>Tools:</strong> Kali, Wireshark, Autopsy, EZ Tools, Python</div>
+              <div class="chip bg-[#0B1220]/90">🔗 <strong>Links:</strong> <a class="underline" href="#">GitHub</a> · <a class="underline" href="https://www.linkedin.com/in/israeltt/">LinkedIn</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Coursework -->
+  <section id="coursework" class="py-24 md:py-28">
+    <div class="max-w-[1100px] mx-auto px-5">
+        <h2 class="text-[1.6rem] md:text-[1.9rem] font-semibold mb-2">Coursework Highlights</h2>
+        <p class="text-slate-400 mb-6">Classes and labs shaping my foundation.</p>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- 1 -->
+            <div class="rounded-2xl border border-slate-700 bg-[#0B1220]/90 p-5 card-gradient shadow-panel">
+                <div class="font-semibold mb-2">🎓 Intro to Cybersecurity (CYS 167)</div>
+                <ul class="list-disc pl-5 text-slate-300 text-sm space-y-1">
+                    <li>Cybersecurity principles</li>
+                    <li>The NIST Framework, CIA triad, Security Policies</li>
+                </ul>
+            </div>
+            <!-- 2 -->
+            <div class="rounded-2xl border border-slate-700 bg-[#0B1220]/90 p-5 card-gradient shadow-panel">
+                <div class="font-semibold mb-2">🔒 Network Security (CYS 330 & 331)</div>
+                <ul class="list-disc pl-5 text-slate-300 text-sm space-y-1">
+                    <li>TCP/IP, VLANs, firewalls, IDS/IPS</li>
+                    <li>Hands-on: Cisco Virtual Network Lab</li>
+                </ul>
+            </div>
+            <!-- 3 -->
+            <div class="rounded-2xl border border-slate-700 bg-[#0B1220]/90 p-5 card-gradient shadow-panel">
+                <div class="font-semibold mb-2">🖥️ System & Software Security (CYS 347)</div>
+                <ul class="list-disc pl-5 text-slate-300 text-sm space-y-1">
+                    <li>Securing Operation Systems & Penetration testing</li>
+                    <li>Hands-on: exploit prevention labs</li>
+                </ul>
+            </div>
+            <!-- 4 -->
+            <div class="rounded-2xl border border-slate-700 bg-[#0B1220]/90 p-5 card-gradient shadow-panel">
+                <div class="font-semibold mb-2">🐍 Scripting for Cybersecurity (CYS 337)</div>
+                <ul class="list-disc pl-5 text-slate-300 text-sm space-y-1">
+                    <li>Python for parsing, automation, and alerts</li>
+                    <li>Hands-on: log normalization + IOC matching</li>
+                </ul>
+            </div>
+            <!-- 5 -->
+            <div class="rounded-2xl border border-slate-700 bg-[#0B1220]/90 p-5 card-gradient shadow-panel">
+                <div class="font-semibold mb-2">⚡ Ethical Hacking (CYS 421)</div>
+                <ul class="list-disc pl-5 text-slate-300 text-sm space-y-1">
+                    <li>Vulnerability assessment and penetration testing</li>
+                    <li>Hands-on: web app pentest and exploitation labs</li>
+                </ul>
+            </div>
+            <!-- 6 -->
+            <div class="rounded-2xl border border-slate-700 bg-[#0B1220]/90 p-5 card-gradient shadow-panel">
+                <div class="font-semibold mb-2">🕵️ Digital Forensics (CYS 421)</div>
+                <ul class="list-disc pl-5 text-slate-300 text-sm space-y-1">
+                    <li>Evidence handling, imaging, and chain of custody</li>
+                    <li>Hands-on: Windows artifact triage with Autopsy</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+  </section>
+
+  <!-- Labs & Projects -->
+  <section id="projects" class="py-12 md:pt-28">
+    <div class="max-w-[1100px] mx-auto px-5">
+    <h2 class="text-[1.6rem] md:text-[1.9rem] font-semibold mb-2">Labs & Projects</h2>
+    <p class="text-slate-400 mb-6">Practical work from classes, home lab, and CTFs.</p>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Card 1 -->
+      <article class="rounded-2xl border border-[var(--border)] bg-[#0B1220]/90 card-gradient overflow-hidden shadow-panel">
+        <div class="aspect-video bg-gradient-to-br from-[var(--accent)]/20 to-[var(--brand)]/20 border-b border-[var(--border)]"></div>
+        <div class="p-4">
+          <h3 class="text-lg font-semibold">Home Lab: Proxmox Setup</h3>
+          <p class="text-sm text-[var(--muted)]">Proxmox · VMs · Linux</p>
+          <p class="mt-2 text-sm">Created the foundation for my home lab with a storage and media server and a wireguard VPN for remote access.</p>
+          <a class="mt-3 inline-flex items-center gap-1 underline text-sm" href="#">GitHub Repo Coming Soon →</a>
+        </div>
+      </article>
+      <!-- Card 2 -->
+      <article class="rounded-2xl border border-[var(--border)] bg-[#0B1220]/90 card-gradient overflow-hidden shadow-panel">
+        <div class="aspect-video bg-gradient-to-br from-[var(--accent)]/20 to-[var(--brand)]/20 border-b border-[var(--border)]"></div>
+        <div class="p-4">
+          <h3 class="text-lg font-semibold">TheYenDev: Creative Projects</h3>
+          <p class="text-sm text-[var(--muted)]">Writing · Creative · Website</p>
+          <p class="mt-2 text-sm">Originally, I created this website as a portfolio, but now, it’s outlive it purpose. Now I use it as a platform to share my ideas with maybe other like-minded individuals.</p>
+          <a class="mt-3 inline-flex items-center gap-1 underline text-sm" href="#">Project.TheYenDev.com →</a>
+        </div>
+      </article>
+      <!-- Card 3 -->
+      <article class="rounded-2xl border border-[var(--border)] bg-[#0B1220]/90 card-gradient overflow-hidden shadow-panel">
+        <div class="aspect-video bg-gradient-to-br from-[var(--accent)]/20 to-[var(--brand)]/20 border-b border-[var(--border)]"></div>
+        <div class="p-4">
+          <h3 class="text-lg font-semibold">Home Lab: Placeholder</h3>
+          <p class="text-sm text-[var(--muted)]">NAS · Storage · Permisions</p>
+          <p class="mt-2 text-sm">Homelab NAS coming soon.</p>
+          <a class="mt-3 inline-flex items-center gap-1 underline text-sm" href="#">Comming Soon →</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Skills & Certifications -->
+  <section id="skills" class="py-12 md:pt-28">
+    <div class="max-w-[1100px] mx-auto px-5">
+      <h2 class="text-[1.6rem] md:text-[1.9rem] font-semibold mb-2">Skills & Certifications</h2>
+    <div class="grid gap-6 md:grid-cols-2">
+      <!-- Skills with progress bars -->
+      <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-panel card-gradient">
+        <div class="font-semibold mb-4">Skills</div>
+        <!-- Progress bars -->
+        <div class="space-y-4">
+          <div>
+            <div class="text-sm mb-1">Network Management</div>
+            <div class="h-3 rounded-full bg-black/30 border border-[var(--border)] p-[3px]">
+              <div class="h-full rounded-full bg-gradient-to-r from-[var(--accent)] to-[var(--brand)]" style="width:85%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="text-sm mb-1">Digital Forensics</div>
+            <div class="h-3 rounded-full bg-black/30 border border-[var(--border)] p-[3px]">
+              <div class="h-full rounded-full bg-gradient-to-r from-[var(--accent)] to-[var(--brand)]" style="width:60%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="text-sm mb-1">Incident Response</div>
+            <div class="h-3 rounded-full bg-black/30 border border-[var(--border)] p-[3px]">
+              <div class="h-full rounded-full bg-gradient-to-r from-[var(--accent)] to-[var(--brand)]" style="width:55%"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Practical skills -->
+        <div class="mt-5">
+          <div class="text-sm text-[var(--muted)] mb-1">Practical skills</div>
+          <ul class="text-sm list-disc pl-5">
+            <li>Basic Network scanning & traffic analysis (Nmap, Wireshark)</li>
+            <li>Linux basics, shell scripting, Python automation (Coming Soon)</li>
+            <li>Disk & memory basics, Windows artifacts</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Certifications -->
+      <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-panel card-gradient">
+        <div class="font-semibold mb-3">Certifications</div>
+        <ul class="text-[var(--muted)] text-sm list-disc pl-5">
+          <li>Upcoming: Google Cybersecurity</li>
+          <li>Planned: CompTIA Security+, Cisco CyberOps</li>
+          <li>Cyber Defenders: Working towards Blue Team badges</li>
+          <li>TryHackMe Rank: (Null)</li>
+        </ul>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="py-12 md:pt-28">
+    <div class="max-w-[1100px] mx-auto px-5">
+      <h2 class="text-[1.6rem] md:text-[1.9rem] font-semibold mb-2">Contact</h2>
+      <form class="space-y-4 rounded-2xl border border-slate-700 bg-[#0B1220]/90 p-6 card-gradient">
+        <input type="text" placeholder="Your Name" class="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3" />
+        <input type="email" placeholder="Your Email" class="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3" />
+        <textarea placeholder="Message" class="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3"></textarea>
+        <button class="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-2 hover:border-[var(--brand)]">Send</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-[var(--border)]/80 text-sm">
+    <div class="max-w-[1100px] mx-auto px-5 flex flex-wrap items-center justify-between gap-3 py-6 text-[var(--muted)]">
+      <div>© <span id="year"></span> [Your Name]. All rights reserved.</div>
+      <div class="inline-flex items-center gap-2">Powered by curiosity and caffeine ☕</div>
+    </div>
+  </footer>
+  <script>
+    function applyTheme(name){
+      const vars = THEMES[name] || THEMES['blue-cyan'];
+      for (const k in vars) document.documentElement.style.setProperty(k, vars[k]);
+      document.documentElement.setAttribute('data-theme', name);
+      try { localStorage.setItem('theme', name); } catch {}
+    }
+    (function initTheme(){
+      const saved = (()=>{ try { return localStorage.getItem('theme'); } catch { return null; } })();
+      const current = saved || document.documentElement.getAttribute('data-theme') || 'blue-cyan';
+      applyTheme(current);
+      const sel = document.getElementById('themeSwitcher');
+      if (sel) {
+        sel.value = current;
+        sel.addEventListener('change', e => applyTheme(e.target.value));
+      }
+    })();
+  </script>
+</body>
+</html>
